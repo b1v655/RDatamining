@@ -1,0 +1,81 @@
+
+
+#nulladik beolvasas
+mopri = read_delim("mobile_price.csv", delim="," )
+mopri
+#elso feladat 
+mopri_selected= mopri %>% select(battery_power,sc_h,sc_w)
+
+
+ggplot(data=mopri_selected)+
+geom_point(mapping = aes(x = battery_power, y = sc_h*sc_w ))
+
+#következtetés: az állítás ábra szerint nem igaz
+
+mopri_selected2= mopri %>% select(battery_power,sc_h,sc_w, touch_screen,price_range,four_g,int_memory) %>% 
+filter(touch_screen == 1| int_memory>mean(int_memory) |four_g==1)
+
+ggplot(data=mopri_selected2)+
+geom_point(mapping = aes(x = battery_power, y = sc_h*sc_w, color=price_range))
+
+#masodik feladat
+mopri2=mopri
+#hianyzok kezelese
+for(i in 1:21){
+  if(is.double(mopri[i,1])){
+    t=mopri[i]
+    na.replace(t,mean(mopri[i]))
+    mopri2[i]=t
+  }
+}
+
+mopri2$diagonal=sqrt(mopri2$sc_h*mopri2$sc_h+mopri2$sc_w*mopri2$sc_w)
+mopri2$diagonal
+mopri2
+
+
+mopri2_selected= mopri2 %>% select(pc,n_cores,diagonal, battery_power, four_g, price_range)
+
+#indoklás,pc: technikai fejlődési mutató, n_cores: szintén, diagonal: új technológia, battery power: mindig is az emberiség gyengéje lesz a jó akumulátor, four_g: tipp 
+
+#harmadik feladat
+
+mopri2_selected_corr=mopri2_selected%>% 
+correlate() 
+
+index = sample(1:nrow(mopri2_selected), round(nrow(mopri2_selected))*0.7)
+train = mopri2_selected [index,] 
+test= mopri2_selected[-index,]
+model = rpart(price_range ~ . , data = train, method = "class")
+
+rpart.plot(model)
+
+predict_test = predict(model,test, type="class")
+
+confusion_matrix = table (test$price_range, predict_test)
+confusion_matrix
+#predict_test
+#      0   1   2   3
+#  0 115   0   0  44
+#  1  72   0   0  54
+#  2  93   0   0  66
+#  3  58   0   0  98
+
+arc= sum(diag(confusion_matrix)) / sum (confusion_matrix)
+arc
+#[1] 0.355
+
+#borzalmas érték :( de nem szerettem volna leragadni ennél
+
+#negyedik feladat
+
+mopri3_selected= mopri2 %>% select(m_dep,talk_time,int_memory,ram,clock_speed, price_range)
+ctrl = trainControl(method="repeatedcv", repeats=6)
+knnFit= train(price_range ~ ., data = mopri3_selected , method = "knn", trControl = ctrl, tuneLength=20) #5, 10
+knnFit
+plot(knnFit)
+
+#17-essel sikerült nálam
+
+#ötödik feladat
+#a saját osztályozóm nem feltétlen a legjobb eredményt adta. Nem arra számítottam. 

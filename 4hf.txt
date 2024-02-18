@@ -1,0 +1,87 @@
+
+1. próba 
+index = sample(1:nrow(titanic_selected), round(nrow(titanic_selected))*0.7)
+
+válaszérték
+
+
+     predict_test
+       No Yes
+  No  211  19
+  Yes  62 101
+
+arc:
+[1] 0.7938931
+
+2. próba 
+
+
+index = sample(1:nrow(titanic_selected), round(nrow(titanic_selected))*0.8)
+
+A vágás 80/20 arányban
+
+
+     predict_test
+       No Yes
+  No  134  25
+  Yes  30  73
+
+arc:
+[1] 0.7900763
+
+Vélemény:
+
+Ebben az esetben is hasonlóan jó értéket kapunk a nagy ranulóadatbázis miatt, mint az előbbiekben
+
+
+3. próba 
+
+
+index = sample(1:nrow(titanic_selected), round(nrow(titanic_selected))*0.6)
+
+A vágás 60/40 arányban
+
+
+     predict_test
+       No Yes
+  No  286  42
+  Yes  82 114
+
+arc:
+[1] 0.7633588
+
+vélemény: 
+
+A kevesebb tanuó adat és a nagy tesztbázis miatt kapunk valamennyivel gyengébb eredményt, de még ez is jónak mondható
+
+
+4. próba
+children attribútum kiszedése az adathalmazból
+
+
+     predict_test
+       No Yes
+  No  216  32
+  Yes  40 105
+
+arc:
+[1] 0.8167939
+
+vélemény
+Mivel kevesebb attribútumnak kell megfelelni, illetve mivel szerintem kissé irreleváns attribútum túlélést illetően, így javult az eredmény
+
+
+5. próba
+
+Passenger class nélkül
+
+     predict_test
+       No Yes
+  No  204  36
+  Yes  35 118
+
+
+> arc:
+[1] 0.8193384
+
+

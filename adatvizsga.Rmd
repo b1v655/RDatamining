@@ -1,0 +1,451 @@
+rfib <- function(n){
+  if(n==0 || n==1){
+    return(n)
+  } else {
+    return(fib(n-1)+fib(n-2))
+  }
+}
+
+rfib(0) 
+rfib(1) 
+rfib(2) 
+rfib(3)
+
+ 
+
+
+
+library(stringr)
+kmer <- function(s){
+  max=str_sub(s,0,1)
+  maxlen=0
+  for(i in 1:str_length(s)){
+    j=i
+    while(j<str_length(s)&&str_sub(s,j,j)==str_sub(s,i,i)){
+      j=j+1
+      if(j-i>maxlen){
+        maxlen=j-i
+        max=str_sub(s,i,i)
+      }
+    }
+  }
+  return(list(max,maxlen))
+}
+
+
+kmer("AABBBCCB") 
+kmer("ABBCCCCDBBB") 
+
+
+install.packages("tidyverse")
+library(tidyverse)
+
+install.packages("ggplot2")
+library(ggplot2)
+
+
+poke=read_csv("Pokemon.csv")
+
+pokemon=poke %>%
+select(`Type 1`, Generation, HP, Defense, Attack, Speed) %>%
+filter(`Type 1` == "Fire" |`Type 1` == "Water"  | `Type 1` == "Electric")  %>%
+group_by(`Type 1`, Generation)%>%
+summarize(mean_hp = mean(HP),mean_def = mean(Defense),mean_atk = mean(Attack),oszl= mean(HP)+ mean(Defense)+ mean(Attack))    %>%
+arrange(desc(oszl))
+
+
+pokemon[1:10,]
+
+
+ggplot(data=pokemon[1:10,])+
+geom_point(mapping = aes(x = mean_hp, y = mean_atk, color = `Type 1`, size= mean_def))
+
+
+
+titanic = read_delim("titanic.csv", delim=";" )
+library("imputeTS")
+for(i in 1:13){
+  if(is.double(titanic[i,1])){
+    t=titanic[i]
+    na.replace(t,mean(titanic[i]))
+    titanic[i]=t
+  }
+}
+
+for(i in 1:13){
+  t=titanic[i]
+  for(j in 2:1309 ){
+      if(titanic[i,j]<(mean(titanic[i])* 0.05)||titanic[i,j]<(mean(titanic[i])*1.95)){
+        titanic[i,j]=mean(titanic[i])
+      }
+  }
+}
+
+install.packages("corrr")  
+library(corrr)
+titanic_selected = titanic %>% select(Age,`No of Siblings or Spouses on Board`,`No of Parents or Children on Board`,`Passenger Fare`,Birth)  %>% correlate() 
+
+index = sample(1:nrow(titanic_selected), round(nrow(titanic_selected))*0.8)
+train = titanic_selected [index,] 
+test= titanic_selected[-index,]
+model = rpart(Survived ~ . , data = train, method = "class")
+
+rpart.plot(model)
+
+predict_test = predict(model,test, type="class")
+
+confusion_matrix = table (test$Survived, predict_test)
+confusion_matrix
+arc= sum(diag(confusion_matrix)) / sum (confusion_matrix)
+arc
+index = sample(1:nrow(titanic_selected), round(nrow(titanic_selected))*0.7)
+index = sample(1:nrow(titanic_selected), round(nrow(titanic_selected))*0.8)
+
+index = sample(1:nrow(titanic_selected), round(nrow(titanic_selected))*0.6)
+library(tibble)
+library(dplyr)
+library(readr)
+
+library(caret)
+library(proxy)
+library(e1071)
+
+install.packages("caret")
+install.packages("proxy")
+install.packages("e1071")
+
+
+data("iris")
+head(iris)
+
+str(iris)
+
+set.seed(123)
+
+index=sample(1:nrow(iris),round(nrow(iris))*0.7)
+
+train = iris[index,]
+test = iris[-index,]
+
+str(train)
+str(test)
+
+#caret
+knn_model=knn3(Species ~ ., data=train, k=5)
+knn_model
+
+pred = predict(knn_model,test,type='class')
+
+confusion_matrix = table(test$Species,pred)
+
+print(confusion_matrix)
+
+acc = sum (diag(confusion_matrix)) / sum (confusion_matrix)
+
+print(acc)
+
+index =createDataPartition(iris$Species, p =0.7, list=FALSE)
+
+train = iris[index,]
+test = iris[-index,]
+str(train)
+str(test)
+
+startSet=sample(1:nrow(iris),5)
+samplePool = train [-startSet,]
+start = train[startSet,]
+samp=maxDissim(start, samplePool,n=5)
+head(samp)
+
+
+ctrl = trainControl(method="repeatedcv", repeats=5)
+knnFit= train(Species ~ ., data = iris , method = "knn", trControl = ctrl, tuneLength=20)
+knnFit
+knnFit$finalModel
+
+plot(knnFit)
+
+
+
+
+knnGrid = data.frame(k=seq(1,20,1))
+ctrl = trainControl(method="repeatedcv", repeats=5)
+knnFit= train(Species ~ ., data = iris , method = "knn", trControl = ctrl, tuneGrid = knnGrid)
+knnFit
+knnFit$finalModel
+
+plot(knnFit)
+
+
+
+iris_two = iris[0:100,]
+
+ggplot(data = iris_two) +
+geom_point(mapping = aes(x=Sepal.Width, y= Petal.Length, color=Species))
+
+
+library(e1071)
+
+svmfit = svm(Species ~ ., data = iris_two , kernel = "linear", scale=FALSE)
+
+plot (svmfit, iris_two, Sepal.Width~Petal.Length)
+
+iris_two2 =iris[50:150,]
+
+ggplot(data = iris_two) +
+geom_point(mapping = aes(x=Sepal.Width, y= Petal.Length, color=Species))
+
+
+library(e1071)
+
+svmfit = svm(Species ~ ., data = iris_two2 , kernel = "linear", scale=FALSE)
+
+plot (svmfit, iris_two2, Sepal.Width~Petal.Length)
+
+fitctrl = trainControl(method="cv")
+bagtree= train(Species ~ ., data = iris , method = "treebag", trControl = fitctrl, nbagg=100)
+bagtree
+install.packages("kernlab")
+library(kernlab)
+
+gauctrl = trainControl(method="cv")
+gaussian= train(Species ~ ., data = iris , method = "gaussprLinear", trControl = gauctrl)
+gaussian
+
+
+install.packages("tidyverse")
+library(tidyverse)
+
+install.packages("ggplot2")
+library(ggplot2)
+install.packages("tibble")
+install.packages("dplyr")
+install.packages("readr")
+install.packages("caret")
+install.packages("proxy")
+install.packages("e1071")
+
+library(tibble)
+library(dplyr)
+library(readr)
+
+library(caret)
+library(proxy)
+library(e1071)
+library(kernlab)
+
+gauctrl = trainControl(method="cv")
+ gaussian= train(Species ~ ., data = iris , method = "gaussprPoly",trControl = gauctrl, degree=3, scale=FALSE)
+gaussian
+install.packages(logicFS)
+rfctrl = trainControl(method="cv")
+randomforest= train(Species ~ ., data = iris , method = "rf", trControl = rfctrl,  mtry=10)
+randomforest
+
+install.packages(randomForrest)
+
+plot (randomforest)
+
+
+
+
+
+
+
+
+
+
+
+titanic_selected = titanic %>%
+rename(pc=`Passenger Class`, children=`No of Parents or Children on Board`) %>%
+select(Sex,Age,pc,children,Survived)
+
+
+titanic_selected[is.na(titanic_selected$Age), "Age"] = mean (titanic_Selected$Age, na.rm=T)
+
+summary (titanic_selected)
+
+install.packages("rpart.plot")  
+library(corrr)
+library(rpart)
+library(rpart.plot)
+titanic = read_delim("titanic.csv", delim=";" )
+titanic_selected = titanic %>% select(Age,`No of Siblings or Spouses on Board`,`No of Parents or Children on Board`,`Passenger Fare`,Birth,Survived)  %>% correlate() 
+titanic_selected = titanic %>%
+rename(pc=`Passenger Class`, children=`No of Parents or Children on Board`) %>%
+select(Sex,Age,pc,children,Survived) %>% 
+correlate() 
+index = sample(1:nrow(titanic_selected), round(nrow(titanic_selected))*0.8)
+train = titanic_selected [index,] 
+test= titanic_selected[-index,]
+model = rpart(Survived ~ . , data = train, method = "class")
+
+rpart.plot(model)
+
+predict_test = predict(model,test, type="class")
+
+confusion_matrix = table (test$Survived, predict_test)
+confusion_matrix
+arc= sum(diag(confusion_matrix)) / sum (confusion_matrix)
+arc
+
+
+
+
+#nulladik beolvasas
+mopri = read_delim("mobile_price.csv", delim="," )
+mopri
+#elso feladat 
+mopri_selected= mopri %>% select(battery_power,sc_h,sc_w)
+
+
+ggplot(data=mopri_selected)+
+geom_point(mapping = aes(x = battery_power, y = sc_h*sc_w ))
+
+#következtetés: az állítás ábra szerint nem igaz
+
+mopri_selected2= mopri %>% select(battery_power,sc_h,sc_w, touch_screen,price_range,four_g,int_memory) %>% 
+filter(touch_screen == 1| int_memory>mean(int_memory) |four_g==1)
+
+ggplot(data=mopri_selected2)+
+geom_point(mapping = aes(x = battery_power, y = sc_h*sc_w, color=price_range))
+
+#masodik feladat
+mopri2=mopri
+#hianyzok kezelese
+for(i in 1:21){
+  if(is.double(mopri[i,1])){
+    t=mopri[i]
+    na.replace(t,mean(mopri[i]))
+    mopri2[i]=t
+  }
+}
+
+mopri2$diagonal=sqrt(mopri2$sc_h*mopri2$sc_h+mopri2$sc_w*mopri2$sc_w)
+mopri2$diagonal
+mopri2
+
+
+mopri2_selected= mopri2 %>% select(pc,n_cores,diagonal, battery_power, four_g, price_range)
+
+#indoklás,pc: technikai fejlődési mutató, n_cores: szintén, diagonal: új technológia, battery power: mindig is az emberiség gyengéje lesz a jó akumulátor, four_g: tipp 
+
+#harmadik feladat
+
+mopri2_selected_corr=mopri2_selected%>% 
+correlate() 
+
+index = sample(1:nrow(mopri2_selected), round(nrow(mopri2_selected))*0.7)
+train = mopri2_selected [index,] 
+test= mopri2_selected[-index,]
+model = rpart(price_range ~ . , data = train, method = "class")
+
+rpart.plot(model)
+
+predict_test = predict(model,test, type="class")
+
+confusion_matrix = table (test$price_range, predict_test)
+confusion_matrix
+#predict_test
+#      0   1   2   3
+#  0 115   0   0  44
+#  1  72   0   0  54
+#  2  93   0   0  66
+#  3  58   0   0  98
+
+arc= sum(diag(confusion_matrix)) / sum (confusion_matrix)
+arc
+#[1] 0.355
+
+#borzalmas érték :( de nem szerettem volna leragadni ennél
+
+#negyedik feladat
+
+mopri3_selected= mopri2 %>% select(m_dep,talk_time,int_memory,ram,clock_speed, price_range)
+ctrl = trainControl(method="repeatedcv", repeats=6)
+knnFit= train(price_range ~ ., data = mopri3_selected , method = "knn", trControl = ctrl, tuneLength=20) #5, 10
+knnFit
+plot(knnFit)
+
+#17-essel sikerült nálam
+
+#ötödik feladat
+#a saját osztályozóm nem feltétlen a legjobb eredményt adta. 
+
+
+install.packages("factoextra")
+
+install.packages("tidytext")
+install.packages("gridExtra")
+install.packages("fpc")
+
+
+
+library(factoextra) 
+library(ggplot2)
+library(tidyverse)
+library(cluster) 
+library(dbscan) 
+library(gridExtra) 
+library(fpc) 
+library(tibble)
+library(dplyr)
+library(readr)
+library(stringr)
+library(tidytext) 
+library(ggplot2)
+
+### Masodik zh
+
+##Elso feladat
+
+#1.
+gdp = read_delim("UN.csv", delim="," )
+gdp
+#2.
+gdp_selected= mopri %>% select(lifeMale, lifeFemale,infantMortality, GDPperCapita)
+gdp_selected
+
+#3.
+gdp_selected=na.omit(gdp_selected)
+#4.
+
+gdp_selected = scale(gdp_selected)
+gdp_selected
+
+#5.
+totwith <- function(k) {
+  kmeans(gdp_selected, k, nstart = 10 )$tot.withinss
+}
+k_nums = 1:15
+values = map_dbl(k_nums, totwith)
+values
+#[1] 748.00000 288.23368 139.67827 103.08005  72.34271  57.45998
+# [7]  49.13569  43.38781  39.58201  36.14266  33.01135  32.68766
+#[13]  26.87740  28.80540  25.59098
+ggplot(aes(x = k_nums, y = value), data = as_tibble(values)) +
+geom_point() + geom_line()
+
+#6.
+
+
+set.seed(1235)
+fviz_nbclust(gdp_selected, kmeans, method = "silhouett", k.max=15)
+
+k2<-kmeans(gdp_selected, centers=2, nstart = 10 )
+
+p1 <- fviz_cluster(k2, geom = "point", data = gdp_selected) + ggtitle("k = 2")
+
+plot(p1)
+
+#7.
+medoids = pamk(gdp_selected, 2)
+medoids
+
+#8
+
+#9
+#Szerintem sikerült jól csoportosítani az országokat 2 clusterrel, hiszen ezalapján meg tudjuk különböztetni a fejlett, és fejlődő országokat egymástól.
+
+## Második feladat
+

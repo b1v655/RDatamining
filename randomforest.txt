@@ -1,0 +1,33 @@
+rfctrl = trainControl(method="cv")
+randomforest= train(Species ~ ., data = iris , method = "rf", trControl = rfctrl, tuneLength=10)
+randomforest
+
+
+válaszüzenet
+
+Random Forest 
+
+150 samples
+  4 predictor
+  3 classes: 'setosa', 'versicolor', 'virginica' 
+
+No pre-processing
+Resampling: Cross-Validated (10 fold) 
+Summary of sample sizes: 135, 135, 135, 135, 135, 135, ... 
+Resampling results across tuning parameters:
+
+  mtry  Accuracy   Kappa
+  2     0.9466667  0.92 
+  3     0.9466667  0.92 
+  4     0.9466667  0.92 
+
+Accuracy was used to select the optimal model using
+ the largest value.
+The final value used for the model was mtry = 2.
+
+
+Konklúzió:
+
+Gyengébb eredményt ad mint a társai. Megtalálja viszont magától az optimális mtry paramétert.
+
+mtry =2-nél kapjuk a legjobb eredményt.

@@ -1,0 +1,8 @@
+1.feladat
+
+Írj egy programot ami beolvassa a minta.txt állományt, majd ezt kiiratja a képernyőre. A feladatot oldd meg magsszintű beolvasással.
+
+2. feladat
+
+Az előző feladatot egészítsd ki egy alprogrammal, amely kiiratja a beolvasott szöveget ascii kódolásban az eredmeny.txt állományba. 
+

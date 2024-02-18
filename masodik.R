@@ -1,0 +1,91 @@
+### Masodik zh
+
+##Elso feladat
+
+#1.
+gdp = read_delim("UN.csv", delim="," )
+gdp
+#2.
+gdp_selected= gdp%>% select(lifeMale, lifeFemale,infantMortality, GDPperCapita)
+gdp_selected
+
+#3.
+gdp_selected=na.omit(gdp_selected)
+#4.
+
+gdp_selected = scale(gdp_selected)
+gdp_selected
+
+#5.
+totwith <- function(k) {
+  kmeans(gdp_selected, k, nstart = 10 )$tot.withinss
+}
+k_nums = 1:15
+values = map_dbl(k_nums, totwith)
+values
+#[1] 748.00000 288.23368 139.67827 103.08005  72.34271  57.45998
+# [7]  49.13569  43.38781  39.58201  36.14266  33.01135  32.68766
+#[13]  26.87740  28.80540  25.59098
+ggplot(aes(x = k_nums, y = value), data = as_tibble(values)) +
+  geom_point() + geom_line()
+
+#6.
+
+
+set.seed(1235)
+fviz_nbclust(gdp_selected, kmeans, method = "silhouett", k.max=15)
+
+k2<-kmeans(gdp_selected, centers=2, nstart = 10 )
+
+p1 <- fviz_cluster(k2, geom = "point", data = gdp_selected) + ggtitle("k = 2")
+
+plot(p1)
+
+#7.
+medoids = pamk(gdp_selected, 2)
+medoids
+
+#8
+
+#9
+#Szerintem sikerült jól csoportosítani az országokat 2 clusterrel, hiszen ezalapján meg tudjuk különböztetni a fejlett, és fejlődő országokat egymástól.
+
+## Második feladat
+
+get_itelet <- function(mondat ){
+  
+  szavak = mondat %>% unnest_tokens(word, text, 'words')
+  szavak_pozitivitas = szavak %>% left_join(sentiments)
+  szavak_pozitivitas=na.omit(szavak_pozitivitas)
+  osztalyok=szavak_pozitivitas %>%
+  group_by(  sentiment) %>%
+  summarize(darab = length(word)) 
+  eredmeny1=osztalyok %>% filter(sentiment=="positive")
+  eredmeny2=osztalyok %>% filter(sentiment=="negative")
+  if(isTRUE( sum(eredmeny1[1,2]) > sum(eredmeny2[1,2]))){
+    return(1)
+  } 
+  if( isTRUE(sum(eredmeny1[1,2]) == sum(eredmeny2[1,2])) ){
+    return(0)
+  }
+  if(isTRUE( sum(eredmeny1[1,2]) < sum(eredmeny2[1,2]) )){
+    return(-1)
+  }
+}
+
+#teszteles
+positive_text = tibble(
+  text = 'I like this movie'
+)
+
+negative_text = tibble(
+  text = 'I hate this movie'
+)
+
+negated_text = tibble(
+  text = 'I dont like this movie'
+)
+
+get_itelet(positive_text) 
+get_itelet(negative_text) 
+get_itelet(negated_text) 
